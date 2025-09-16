@@ -1,0 +1,84 @@
+@startuml
+
+' -----------------------------
+' App Config / Infrastructure
+' -----------------------------
+package app.config {
+    class HibernateConfig {
+        - emf : EntityManagerFactory
+        - emfTest : EntityManagerFactory
+        - isTest : Boolean
+        --
+        + setTest(test : Boolean) : void
+        + getTest() : Boolean
+        + getEntityManagerFactory() : EntityManagerFactory
+        + getEntityManagerFactoryForTest() : EntityManagerFactory
+        - getAnnotationConfiguration(configuration: Configuration) : void
+        - createEMF(forTest: boolean) : EntityManagerFactory
+        - setBaseProperties(props: Properties) : Properties
+        - setDeployedProperties(props: Properties) : Properties
+        - setDevProperties(props: Properties) : Properties
+        - setTestProperties(props: Properties) : Properties
+    }
+}
+
+package app.exceptions {
+    class ApiException {
+        - code : int
+        --
+        + ApiException(code:int, msg:String)
+        + getCode() : int
+    }
+}
+
+package app.utils {
+    class Utils {
+        + getPropertyValue(propName:String, resourceName:String) : String
+    }
+}
+
+' -----------------------------
+' Entities
+' -----------------------------
+package app.entities {
+
+
+    class Movies {
+        - id : Integer
+        - title : String
+        - release_date : LocalDate
+        - rating : double
+        - actors : List<Actor>
+        - directors : List<Director>
+        - genres : List<Genre>
+    }
+
+    class Actors {
+        - id : Integer
+        - name : String
+        - character : String
+        - credit_id : String
+        - order : Integer
+        - known_for_department : String
+        - movies : List<Movie>
+    }
+}
+
+package app {
+    class Main {
+        + main(args:String[]) : void
+    }
+}
+
+' -----------------------------
+' Relationships
+' -----------------------------
+Main --> HibernateConfig
+HibernateConfig --> Movies
+HibernateConfig --> Actors
+HibernateConfig --> Utils
+Utils --> ApiException
+
+Movies "0..*" -- "0..*" Actors : appears_in
+
+@enduml
