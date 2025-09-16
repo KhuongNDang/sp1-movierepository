@@ -1,7 +1,6 @@
 package app;
 
 import app.config.HibernateConfig;
-import app.entities.Beer;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
