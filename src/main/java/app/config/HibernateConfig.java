@@ -11,6 +11,8 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HibernateConfig {
     private static EntityManagerFactory emf;
@@ -47,6 +49,9 @@ public class HibernateConfig {
 
     private static EntityManagerFactory createEMF(boolean forTest) {
         try {
+            Logger.getLogger("org.hibernate.SQL").setLevel(Level.WARNING);
+            Logger.getLogger("org.hibernate.type.descriptor.sql.BasicBinder").setLevel(Level.WARNING);
+
             Configuration configuration = new Configuration();
             Properties props = new Properties();
             // Set the properties
@@ -108,7 +113,7 @@ public class HibernateConfig {
         props.put("hibernate.connection.username", "postgres");
         props.put("hibernate.connection.password", "postgres");
         props.put("hibernate.archive.autodetection", "class");
-        props.put("hibernate.show_sql", "true");
+        props.put("hibernate.show_sql", "false");
         props.put("hibernate.hbm2ddl.auto", "create-drop"); // update for production
         return props;
     }

@@ -11,10 +11,9 @@ public class MovieDAO {
     }
 
     public void save(Movie movie) {
-        em.getTransaction().begin();
-        em.persist(movie);
-        em.getTransaction().commit();
+        em.merge(movie);
     }
+
 
     public Movie find(int id) {
         return em.find(Movie.class, id);

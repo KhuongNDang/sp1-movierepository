@@ -17,32 +17,48 @@ public class Main {
             // 1️⃣ Create EntityManager
             emf = Persistence.createEntityManagerFactory("default");
             em = emf.createEntityManager();
+
             MovieDAO movieDAO = new MovieDAO(em);
-            MovieService movieService = new MovieService();
+            MovieService movieService = new MovieService(em);
 
-            // 2️⃣ Fetch a movie from TMDb (example: Fight Club = 550)
-            MovieDTO movieDTO = movieService.fetchMovie(550);
+            // 2️⃣ Begin transaction
+            em.getTransaction().begin();
 
-            // 3️⃣ Convert DTO -> Entity
-            Movie movieEntity = movieService.convertToEntity(movieDTO);
+            // 3️⃣ Fetch and persist first movie (Fight Club)
+            MovieDTO movieDTO1 = movieService.fetchMovie(550);
+            Movie movie1 = movieService.convertToEntity(movieDTO1, em); // pass EM to reuse entities
+            movieDAO.save(movie1); // uses merge internally
+            System.out.println("✅ Movie persisted: " + movie1.getTitle());
 
-            // 4️⃣ Persist movie into PostgreSQL
-            movieDAO.save(movieEntity);
+            // 4️⃣ Fetch and persist second movie (Pulp Fiction)
+            MovieDTO movieDTO2 = movieService.fetchMovie(787);
+            Movie movie2 = movieService.convertToEntity(movieDTO2, em); // reuse same EM
+            movieDAO.save(movie2); // merge again
+            System.out.println("✅ Movie persisted: " + movie2.getTitle());
 
-            System.out.println("✅ Movie persisted: " + movieEntity.getTitle());
+            // 5️⃣ Commit transaction
+            em.getTransaction().commit();
 
-            // Optional: print actors & directors
-            System.out.println("Actors:");
-            movieEntity.getActors().forEach(a -> System.out.println(a.getName() + " as " + a.getCharacter()));
-
-            System.out.println("Directors:");
-            movieEntity.getDirectors().forEach(d -> System.out.println(d.getName()));
+            // Optional: print actors & directors for both movies
+            printMovieDetails(movie1);
+            printMovieDetails(movie2);
 
         } catch (Exception e) {
             e.printStackTrace();
+            if (em != null && em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
         } finally {
             if (em != null) em.close();
             if (emf != null) emf.close();
         }
+    }
+
+    private static void printMovieDetails(Movie movie) {
+        System.out.println("\nMovie: " + movie.getTitle());
+        System.out.println("Actors:");
+        movie.getActors().forEach(a -> System.out.println(a.getName()));
+        System.out.println("Directors:");
+        movie.getDirectors().forEach(d -> System.out.println(d.getName()));
     }
 }
