@@ -1,69 +1,48 @@
 package app;
 
-import app.config.HibernateConfig;
+import app.daos.MovieDAO;
+import app.dtos.MovieDTO;
+import app.entities.Movie;
+import app.services.MovieService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.Persistence;
 
-import java.util.List;
-
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        System.out.println("JPA Beer demo");
+        EntityManagerFactory emf = null;
+        EntityManager em = null;
 
-        Beer b1 = Beer.builder()
-                .name("Svanneke Classic")
-                .brewery("Svanneke Bryghus")
-                .alc(4.8)
-                .type("Pilsner")
-                .build();
+        try {
+            // 1️⃣ Create EntityManager
+            emf = Persistence.createEntityManagerFactory("default");
+            em = emf.createEntityManager();
+            MovieDAO movieDAO = new MovieDAO(em);
+            MovieService movieService = new MovieService();
 
-        Beer b2 = Beer.builder()
-                .name("Royal Export")
-                .brewery("Royal Breweries")
-                .alc(5.6)
-                .type("Pilsner")
-                .build();
+            // 2️⃣ Fetch a movie from TMDb (example: Fight Club = 550)
+            MovieDTO movieDTO = movieService.fetchMovie(550);
 
-        // Svarer til en fabrik, der kan lave en ConnectionPool
-        EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
+            // 3️⃣ Convert DTO -> Entity
+            Movie movieEntity = movieService.convertToEntity(movieDTO);
 
-        // Dette er vores connection (forbindelse)
-        EntityManager em = emf.createEntityManager();
+            // 4️⃣ Persist movie into PostgreSQL
+            movieDAO.save(movieEntity);
 
-        System.out.println("Før: " + b1);
+            System.out.println("✅ Movie persisted: " + movieEntity.getTitle());
 
-        em.getTransaction().begin();
-             em.persist(b1);
-             em.persist(b2);
-        em.getTransaction().commit();
+            // Optional: print actors & directors
+            System.out.println("Actors:");
+            movieEntity.getActors().forEach(a -> System.out.println(a.getName() + " as " + a.getCharacter()));
 
-        em.getTransaction().begin();
-            b1.setAlc(4.6);
-            em.merge(b1);
+            System.out.println("Directors:");
+            movieEntity.getDirectors().forEach(d -> System.out.println(d.getName()));
 
-            // Forespørgel til DB om der findes en øl med navn "Royal Export":
-        TypedQuery query = em.createQuery("select b from Beer b where b.name = :name", Beer.class).setParameter("name", "Royal Export");
-        List<Beer> beers = query.getResultList();
-
-        if (beers.size() > 0) {
-            System.out.println("Hov, den findes i forvejen");
-            System.out.println("Øl: " + beers.get(0).getBrewery());
-        } else {
-            // indsæt
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (em != null) em.close();
+            if (emf != null) emf.close();
         }
-
-
-        em.getTransaction().commit();
-
-        System.out.println("Efter: " + b1);
-
-        em.close();
-        emf.close();
-
-
-
     }
 }
