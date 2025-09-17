@@ -6,12 +6,8 @@ import lombok.Data;
 
 @Data
 @Entity
-public class Actor {
+public class Genre {
     @Id
     private int id;
     private String name;
-
-    public String getCharacter() {
-        return this.name;
-    }
 }

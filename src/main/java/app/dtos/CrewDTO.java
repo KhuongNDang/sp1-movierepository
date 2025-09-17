@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ActorDTO {
+public class CrewDTO {
     private int id;
     private String name;
-    private String character; // role in the movie
+    private String job; // use to filter directors
 }
