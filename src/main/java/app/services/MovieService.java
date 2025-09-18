@@ -9,6 +9,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MovieService {
@@ -46,49 +48,66 @@ public class MovieService {
         movie.setReleaseDate(dto.getRelease_date());
         movie.setRuntime(dto.getRuntime());
 
-        // Genres
+        // --- Genres ---
         if (dto.getGenres() != null) {
-            movie.setGenres(dto.getGenres().stream().map(g -> {
+            List<Genre> genres = new ArrayList<>();
+            for (var g : dto.getGenres()) {
                 Genre genre = em.find(Genre.class, g.getId());
                 if (genre == null) {
                     genre = new Genre();
                     genre.setId(g.getId());
                     genre.setName(g.getName());
+                    em.persist(genre);
                 }
-                return genre;
-            }).toList());
+                genres.add(genre);
+            }
+            movie.setGenres(genres); // mutable list
+        } else {
+            movie.setGenres(new ArrayList<>());
         }
 
-        // Actors
+        // --- Actors ---
         if (dto.getCredits() != null && dto.getCredits().getCast() != null) {
-            movie.setActors(dto.getCredits().getCast().stream().map(a -> {
+            List<Actor> actors = new ArrayList<>();
+            for (var a : dto.getCredits().getCast()) {
                 Actor actor = em.find(Actor.class, a.getId());
                 if (actor == null) {
                     actor = new Actor();
                     actor.setId(a.getId());
                     actor.setName(a.getName());
+                    em.persist(actor);
                 }
-                return actor;
-            }).toList());
+                actors.add(actor);
+            }
+            movie.setActors(actors); // mutable list
+        } else {
+            movie.setActors(new ArrayList<>());
         }
 
-        // Directors
+        // --- Directors ---
         if (dto.getCredits() != null && dto.getCredits().getCrew() != null) {
-            movie.setDirectors(dto.getCredits().getCrew().stream()
-                    .filter(c -> c.getJob().equals("Director"))
-                    .map(c -> {
-                        Director director = em.find(Director.class, c.getId());
-                        if (director == null) {
-                            director = new Director();
-                            director.setId(c.getId());
-                            director.setName(c.getName());
-                        }
-                        return director;
-                    }).toList());
+            List<Director> directors = new ArrayList<>();
+            for (var c : dto.getCredits().getCrew()) {
+                if (!"Director".equals(c.getJob())) continue;
+
+                Director director = em.find(Director.class, c.getId());
+                if (director == null) {
+                    director = new Director();
+                    director.setId(c.getId());
+                    director.setName(c.getName());
+                    em.persist(director);
+                }
+                directors.add(director);
+            }
+            movie.setDirectors(directors); // mutable list
+        } else {
+            movie.setDirectors(new ArrayList<>());
         }
 
         return movie;
     }
+
+
 
 
     // Reuse existing Actor or create new
@@ -114,4 +133,17 @@ public class MovieService {
         }
         return director;
     }
+
+    public void deleteMovie(int movieId) {
+        Movie movie = em.find(Movie.class, movieId);
+        if (movie == null) return;
+
+        // Remove associations in join tables
+        movie.getActors().clear();
+        movie.getDirectors().clear();
+
+        // Then delete the movie
+        em.remove(movie);
+    }
+
 }

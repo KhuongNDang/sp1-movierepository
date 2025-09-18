@@ -1,11 +1,10 @@
 package app;
 
 import app.config.HibernateConfig;
-import app.daos.MovieDAO;
 import app.entities.Movie;
 import app.entities.Actor;
+import app.entities.Director;
 import app.services.MovieService;
-import app.dtos.MovieDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -13,44 +12,52 @@ import jakarta.persistence.EntityManagerFactory;
 public class Main {
 
     public static void main(String[] args) {
+
         EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
         EntityManager em = emf.createEntityManager();
 
         try {
             MovieService movieService = new MovieService(em);
-            MovieDAO movieDAO = new MovieDAO(em);
 
-            // Example TMDb movie IDs (Fight Club and Ocean's Eleven)
-            int[] movieIds = {550, 11};
+            // Example TMDb IDs
+            int movieId1 = 550;  // Fight Club
+            int movieId2 = 787;  // Ocean's Eleven
 
+            // --- Persist movies ---
             em.getTransaction().begin();
 
-            for (int tmdbId : movieIds) {
-                System.out.println("Fetching movie with TMDb ID: " + tmdbId);
-                MovieDTO dto = movieService.fetchMovie(tmdbId);
+            Movie movie1 = movieService.convertToEntity(movieService.fetchMovie(movieId1), em);
+            Movie movie2 = movieService.convertToEntity(movieService.fetchMovie(movieId2), em);
 
-                // Convert DTO -> Entity
-                Movie movie = movieService.convertToEntity(dto, em);
-
-                // Persist movie
-                Movie existingMovie = em.find(Movie.class, movie.getId());
-                if (existingMovie == null) {
-                    em.persist(movie);
-                    System.out.println("Saved movie: " + movie.getTitle());
-                } else {
-                    System.out.println("Movie already exists: " + existingMovie.getTitle());
-                }
-            }
+            em.persist(movie1);
+            em.persist(movie2);
 
             em.getTransaction().commit();
 
-            // Verify actor (e.g., Brad Pitt, ID 287) is in multiple movies
-            Actor brad = em.find(Actor.class, 287);
+            System.out.println("Movies saved successfully.");
+
+            // --- Verify actors/directors linked ---
+            Actor brad = em.find(Actor.class, 287); // Brad Pitt
             if (brad != null) {
                 System.out.println("Brad Pitt is in movies:");
                 brad.getMovies().forEach(m -> System.out.println("- " + m.getTitle()));
+            }
+
+            // --- Delete one movie ---
+            em.getTransaction().begin();
+            System.out.println("\nDeleting movie: " + movie1.getTitle());
+            movieService.deleteMovie(movie1.getId());
+            em.getTransaction().commit();
+
+            System.out.println("Movie deleted successfully.");
+
+            // --- Check remaining actors/directors ---
+            brad = em.find(Actor.class, 287);
+            if (brad != null) {
+                System.out.println("Brad Pitt is still in movies:");
+                brad.getMovies().forEach(m -> System.out.println("- " + m.getTitle()));
             } else {
-                System.out.println("Brad Pitt not found in DB");
+                System.out.println("Brad Pitt no longer exists in DB.");
             }
 
         } catch (Exception e) {
