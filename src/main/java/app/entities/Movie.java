@@ -2,7 +2,6 @@ package app.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,14 @@ public class Movie {
 
     private int runtime;
 
-    // --- Owner side of Movie ↔ Actor ---
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name = "movie_genre",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    private List<Genre> genres = new ArrayList<>();
+
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "movie_actor",
@@ -31,7 +37,6 @@ public class Movie {
     )
     private List<Actor> actors = new ArrayList<>();
 
-    // --- Owner side of Movie ↔ Director ---
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "movie_director",
@@ -39,13 +44,4 @@ public class Movie {
             inverseJoinColumns = @JoinColumn(name = "director_id")
     )
     private List<Director> directors = new ArrayList<>();
-
-    // Genres (unchanged)
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinTable(
-            name = "movie_genre",
-            joinColumns = @JoinColumn(name = "movie_id"),
-            inverseJoinColumns = @JoinColumn(name = "genre_id")
-    )
-    private List<Genre> genres = new ArrayList<>();
 }

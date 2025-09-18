@@ -29,11 +29,11 @@ public class MovieDAO {
             em.remove(movie);
         }
     }
-    public Movie update(Movie movie) {
-        em.getTransaction().begin();
-        Movie updated = em.merge(movie);  // merge opdaterer entity
-        em.getTransaction().commit();
-        return updated;
+    public void updateTitle(int movieId, String newTitle) {
+        Movie movie = em.find(Movie.class, movieId);
+        if (movie != null) {
+            movie.setTitle(newTitle);
+        }
     }
 
     public List<Genre> findAll() {
