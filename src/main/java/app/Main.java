@@ -21,7 +21,7 @@ public class Main {
             MovieDAO movieDAO = new MovieDAO(em);
 
             // Example TMDb movie IDs (Fight Club and Ocean's Eleven)
-            int[] movieIds = {550, 11};
+            int[] movieIds = {550, 787};
 
             em.getTransaction().begin();
 
