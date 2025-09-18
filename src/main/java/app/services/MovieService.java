@@ -12,6 +12,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MovieService {
@@ -49,30 +51,7 @@ public class MovieService {
         movie.setReleaseDate(dto.getRelease_date());
         movie.setRuntime(dto.getRuntime());
 
-        // Genres (reuse existing or create new)
-        if (dto.getGenres() != null) {
-            movie.setGenres(dto.getGenres().stream()
-                    .map(g -> getOrCreateGenre(g.getId(), g.getName()))
-                    .toList());
-        }
 
-        // Actors (reuse existing or create new)
-        if (dto.getCredits() != null && dto.getCredits().getCast() != null) {
-            movie.setActors(dto.getCredits().getCast().stream()
-                    .map(a -> getOrCreateActor(a.getId(), a.getName()))
-                    .toList());
-        }
-
-        // Directors (reuse existing or create new)
-        if (dto.getCredits() != null && dto.getCredits().getCrew() != null) {
-            movie.setDirectors(dto.getCredits().getCrew().stream()
-                    .filter(c -> "Director".equals(c.getJob()))
-                    .map(c -> getOrCreateDirector(c.getId(), c.getName()))
-                    .toList());
-        }
-
-        return movie;
-    }
 
     // Persist the movie DTO to database
     public void saveMovieFromDto(MovieDTO dto) {
@@ -82,6 +61,8 @@ public class MovieService {
         em.merge(movie); // merge inserts new or updates existing
         em.getTransaction().commit();
     }
+
+
 
     // Reuse existing Actor or create new
     private Actor getOrCreateActor(int id, String name) {
@@ -105,6 +86,18 @@ public class MovieService {
             em.persist(director);
         }
         return director;
+    }
+
+    public void deleteMovie(int movieId) {
+        Movie movie = em.find(Movie.class, movieId);
+        if (movie == null) return;
+
+        // Remove associations in join tables
+        movie.getActors().clear();
+        movie.getDirectors().clear();
+
+        // Then delete the movie
+        em.remove(movie);
     }
 
     // Reuse existing Genre or create new

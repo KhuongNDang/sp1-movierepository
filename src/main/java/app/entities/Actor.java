@@ -1,16 +1,15 @@
 package app.entities;
 
-import app.entities.Movie;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class Actor {
 
     @Id
@@ -18,17 +17,7 @@ public class Actor {
 
     private String name;
 
+    // Inverse side
     @ManyToMany(mappedBy = "actors")
     private List<Movie> movies = new ArrayList<>();
-
-    // getters and setters
-    public List<Movie> getMovies() {
-        return movies;
-    }
-
-    public void setMovies(List<Movie> movies) {
-        this.movies = movies;
-    }
-
-    // other getters/setters
 }
