@@ -1,6 +1,8 @@
 package app.config;
 
 import app.entities.Actor;
+import app.entities.Director;
+import app.entities.Genre;
 import app.entities.Movie;
 import app.utils.Utils;
 
@@ -45,6 +47,8 @@ public class HibernateConfig {
     private static void getAnnotationConfiguration(Configuration configuration) {
         configuration.addAnnotatedClass(Actor.class);
         configuration.addAnnotatedClass(Movie.class);
+        configuration.addAnnotatedClass(Genre.class);
+        configuration.addAnnotatedClass(Director.class);
     }
 
     private static EntityManagerFactory createEMF(boolean forTest) {

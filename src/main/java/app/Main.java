@@ -1,64 +1,66 @@
 package app;
 
+import app.config.HibernateConfig;
 import app.daos.MovieDAO;
-import app.dtos.MovieDTO;
 import app.entities.Movie;
+import app.entities.Actor;
 import app.services.MovieService;
+import app.dtos.MovieDTO;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 public class Main {
+
     public static void main(String[] args) {
-        EntityManagerFactory emf = null;
-        EntityManager em = null;
+        EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
+        EntityManager em = emf.createEntityManager();
 
         try {
-            // 1️⃣ Create EntityManager
-            emf = Persistence.createEntityManagerFactory("default");
-            em = emf.createEntityManager();
-
-            MovieDAO movieDAO = new MovieDAO(em);
             MovieService movieService = new MovieService(em);
+            MovieDAO movieDAO = new MovieDAO(em);
 
-            // 2️⃣ Begin transaction
+            // Example TMDb movie IDs (Fight Club and Ocean's Eleven)
+            int[] movieIds = {550, 11};
+
             em.getTransaction().begin();
 
-            // 3️⃣ Fetch and persist first movie (Fight Club)
-            MovieDTO movieDTO1 = movieService.fetchMovie(550);
-            Movie movie1 = movieService.convertToEntity(movieDTO1, em); // pass EM to reuse entities
-            movieDAO.save(movie1); // uses merge internally
-            System.out.println("✅ Movie persisted: " + movie1.getTitle());
+            for (int tmdbId : movieIds) {
+                System.out.println("Fetching movie with TMDb ID: " + tmdbId);
+                MovieDTO dto = movieService.fetchMovie(tmdbId);
 
-            // 4️⃣ Fetch and persist second movie (Pulp Fiction)
-            MovieDTO movieDTO2 = movieService.fetchMovie(787);
-            Movie movie2 = movieService.convertToEntity(movieDTO2, em); // reuse same EM
-            movieDAO.save(movie2); // merge again
-            System.out.println("✅ Movie persisted: " + movie2.getTitle());
+                // Convert DTO -> Entity
+                Movie movie = movieService.convertToEntity(dto, em);
 
-            // 5️⃣ Commit transaction
+                // Persist movie
+                Movie existingMovie = em.find(Movie.class, movie.getId());
+                if (existingMovie == null) {
+                    em.persist(movie);
+                    System.out.println("Saved movie: " + movie.getTitle());
+                } else {
+                    System.out.println("Movie already exists: " + existingMovie.getTitle());
+                }
+            }
+
             em.getTransaction().commit();
 
-            // Optional: print actors & directors for both movies
-            printMovieDetails(movie1);
-            printMovieDetails(movie2);
+            // Verify actor (e.g., Brad Pitt, ID 287) is in multiple movies
+            Actor brad = em.find(Actor.class, 287);
+            if (brad != null) {
+                System.out.println("Brad Pitt is in movies:");
+                brad.getMovies().forEach(m -> System.out.println("- " + m.getTitle()));
+            } else {
+                System.out.println("Brad Pitt not found in DB");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
-            if (em != null && em.getTransaction().isActive()) {
+            if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
         } finally {
-            if (em != null) em.close();
-            if (emf != null) emf.close();
+            em.close();
+            emf.close();
         }
-    }
-
-    private static void printMovieDetails(Movie movie) {
-        System.out.println("\nMovie: " + movie.getTitle());
-        System.out.println("Actors:");
-        movie.getActors().forEach(a -> System.out.println(a.getName()));
-        System.out.println("Directors:");
-        movie.getDirectors().forEach(d -> System.out.println(d.getName()));
     }
 }
