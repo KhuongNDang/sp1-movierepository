@@ -1,6 +1,7 @@
 package app.daos;
 
 import app.entities.Director;
+import app.entities.Movie;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
@@ -26,6 +27,12 @@ public class DirectorDAO {
         if (director != null){
             em.remove(director);
         }
+    }
+    public Director update(Director director) {
+        em.getTransaction().begin();
+        Director updated = em.merge(director);  // merge opdaterer entity
+        em.getTransaction().commit();
+        return updated;
     }
 
     public List<Director> findAll(){
