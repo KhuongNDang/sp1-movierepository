@@ -19,9 +19,8 @@ public class Main {
         try {
             MovieService movieService = new MovieService(em);
 
-            // Example TMDb IDs
-            int movieId1 = 550;  // Fight Club
-            int movieId2 = 787;  // Ocean's Eleven
+            // Example TMDb movie IDs (Fight Club and Ocean's Eleven)
+            int[] movieIds = {550, 787};
 
             // --- Persist movies ---
             em.getTransaction().begin();

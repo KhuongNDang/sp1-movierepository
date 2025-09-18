@@ -1,7 +1,10 @@
 package app.services;
 
-import app.dtos.*;
-import app.entities.*;
+import app.dtos.MovieDTO;
+import app.entities.Actor;
+import app.entities.Director;
+import app.entities.Genre;
+import app.entities.Movie;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.EntityManager;
@@ -15,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class MovieService {
 
-    private static final String API_KEY = System.getenv("API_KEY"); // Your TMDb API key
+    private static final String API_KEY = System.getenv("api_key"); // Your TMDb API key
     private static final String BASE_URL = "https://api.themoviedb.org/3/movie/";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -39,7 +42,7 @@ public class MovieService {
         return objectMapper.readValue(json, MovieDTO.class);
     }
 
-    // Convert DTO -> Entity with shared Actor/Director
+    // Convert DTO -> Entity with shared Actor/Director/Genre
     public Movie convertToEntity(MovieDTO dto, EntityManager em) {
         Movie movie = new Movie();
         movie.setId(dto.getId());
@@ -48,65 +51,16 @@ public class MovieService {
         movie.setReleaseDate(dto.getRelease_date());
         movie.setRuntime(dto.getRuntime());
 
-        // --- Genres ---
-        if (dto.getGenres() != null) {
-            List<Genre> genres = new ArrayList<>();
-            for (var g : dto.getGenres()) {
-                Genre genre = em.find(Genre.class, g.getId());
-                if (genre == null) {
-                    genre = new Genre();
-                    genre.setId(g.getId());
-                    genre.setName(g.getName());
-                    em.persist(genre);
-                }
-                genres.add(genre);
-            }
-            movie.setGenres(genres); // mutable list
-        } else {
-            movie.setGenres(new ArrayList<>());
-        }
 
-        // --- Actors ---
-        if (dto.getCredits() != null && dto.getCredits().getCast() != null) {
-            List<Actor> actors = new ArrayList<>();
-            for (var a : dto.getCredits().getCast()) {
-                Actor actor = em.find(Actor.class, a.getId());
-                if (actor == null) {
-                    actor = new Actor();
-                    actor.setId(a.getId());
-                    actor.setName(a.getName());
-                    em.persist(actor);
-                }
-                actors.add(actor);
-            }
-            movie.setActors(actors); // mutable list
-        } else {
-            movie.setActors(new ArrayList<>());
-        }
 
-        // --- Directors ---
-        if (dto.getCredits() != null && dto.getCredits().getCrew() != null) {
-            List<Director> directors = new ArrayList<>();
-            for (var c : dto.getCredits().getCrew()) {
-                if (!"Director".equals(c.getJob())) continue;
+    // Persist the movie DTO to database
+    public void saveMovieFromDto(MovieDTO dto) {
+        em.getTransaction().begin();
 
-                Director director = em.find(Director.class, c.getId());
-                if (director == null) {
-                    director = new Director();
-                    director.setId(c.getId());
-                    director.setName(c.getName());
-                    em.persist(director);
-                }
-                directors.add(director);
-            }
-            movie.setDirectors(directors); // mutable list
-        } else {
-            movie.setDirectors(new ArrayList<>());
-        }
-
-        return movie;
+        Movie movie = convertToEntity(dto, em);
+        em.merge(movie); // merge inserts new or updates existing
+        em.getTransaction().commit();
     }
-
 
 
 
@@ -117,7 +71,7 @@ public class MovieService {
             actor = new Actor();
             actor.setId(id);
             actor.setName(name);
-            em.persist(actor); // persist immediately so Hibernate knows about it
+            em.persist(actor); // persist immediately
         }
         return actor;
     }
@@ -146,4 +100,15 @@ public class MovieService {
         em.remove(movie);
     }
 
+    // Reuse existing Genre or create new
+    private Genre getOrCreateGenre(int id, String name) {
+        Genre genre = em.find(Genre.class, id);
+        if (genre == null) {
+            genre = new Genre();
+            genre.setId(id);
+            genre.setName(name);
+            em.persist(genre);
+        }
+        return genre;
+    }
 }

@@ -6,6 +6,8 @@ import jakarta.persistence.EntityManager;
 
 import java.util.List;
 
+
+
 public class MovieDAO {
     private final EntityManager em;
 
@@ -26,6 +28,12 @@ public class MovieDAO {
         if (movie != null) {
             em.remove(movie);
         }
+    }
+    public Movie update(Movie movie) {
+        em.getTransaction().begin();
+        Movie updated = em.merge(movie);  // merge opdaterer entity
+        em.getTransaction().commit();
+        return updated;
     }
 
     public List<Genre> findAll() {
