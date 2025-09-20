@@ -42,4 +42,14 @@ public class MovieDAO implements IDAO<Movie, Integer> {
         }
         return false;
     }
+
+    public List<Movie> searchByTitle(String searchTerm) {
+        return em.createQuery(
+                        "SELECT m FROM Movie m WHERE LOWER(m.title) LIKE LOWER(:searchTerm)",
+                        Movie.class
+                )
+                .setParameter("searchTerm", "%" + searchTerm + "%")  // wrap with % for substring search
+                .getResultList();
+    }
+
 }

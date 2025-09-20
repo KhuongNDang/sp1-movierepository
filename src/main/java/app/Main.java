@@ -57,6 +57,14 @@ public class Main {
             List<Movie> dramaMovies = genreDAO.getMoviesByGenreName("Drama");
             dramaMovies.forEach(System.out::println);
 
+            System.out.println();
+            System.out.println();
+
+            // search for "king" → matches "The Lion King", "King Kong", etc.
+            List<Movie> results = movieDAO.searchByTitle("king");
+            results.forEach(System.out::println);
+
+
 
         } catch (Exception e) {
             if (em != null && em.getTransaction().isActive()) {
