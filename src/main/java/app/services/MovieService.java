@@ -118,6 +118,9 @@ public class MovieService {
         movie.setReleaseDate(dto.getRelease_date());
         movie.setRuntime(dto.getRuntime() != null ? dto.getRuntime() : 0);
 
+        movie.setVoteAverage(dto.getVote_average());
+        movie.setPopularity(dto.getPopularity());
+
         // Genres
         if (dto.getGenres() != null) {
             movie.setGenres(dto.getGenres().stream()

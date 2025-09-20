@@ -24,6 +24,12 @@ public class Movie {
 
     private int runtime;
 
+    @Column(name = "vote_average")
+    private Double voteAverage;
+
+    @Column(name = "popularity")
+    private Double popularity;
+
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "movie_genre",
