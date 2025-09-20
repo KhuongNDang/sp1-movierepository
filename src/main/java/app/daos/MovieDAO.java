@@ -3,6 +3,7 @@ package app.daos;
 import app.entities.Movie;
 import jakarta.persistence.EntityManager;
 import java.util.List;
+import java.lang.Double;
 
 public class MovieDAO implements IDAO<Movie, Integer> {
 
@@ -43,6 +44,40 @@ public class MovieDAO implements IDAO<Movie, Integer> {
         return false;
     }
 
+
+    // Top 10 highest rated
+    public List<Movie> getTop10HighestRated() {
+        return em.createQuery(
+                        "SELECT m FROM app.entities.Movie m ORDER BY m.voteAverage DESC", Movie.class)
+                .setMaxResults(10)
+                .getResultList();
+    }
+
+    // Top 10 lowest rated
+    public List<Movie> getTop10LowestRated() {
+        return em.createQuery(
+                        "SELECT m FROM app.entities.Movie m ORDER BY m.voteAverage ASC", Movie.class)
+                .setMaxResults(10)
+                .getResultList();
+    }
+
+    // Most popular
+    public List<Movie> getTop10MostPopular() {
+        return em.createQuery(
+                        "SELECT m FROM app.entities.Movie m ORDER BY m.popularity DESC", Movie.class)
+                .setMaxResults(10)
+                .getResultList();
+    }
+
+    // Average rating
+    public Double getAverageRating() {
+        return em.createQuery(
+                        "SELECT AVG(m.voteAverage) FROM app.entities.Movie m", Double.class)
+                .getSingleResult();
+    }
+
+
+
     public List<Movie> searchByTitle(String searchTerm) {
         return em.createQuery(
                         "SELECT m FROM Movie m WHERE LOWER(m.title) LIKE LOWER(:searchTerm)",
@@ -51,5 +86,6 @@ public class MovieDAO implements IDAO<Movie, Integer> {
                 .setParameter("searchTerm", "%" + searchTerm + "%")  // wrap with % for substring search
                 .getResultList();
     }
+
 
 }
