@@ -5,9 +5,12 @@ import app.daos.ActorDAO;
 import app.daos.DirectorDAO;
 import app.daos.GenreDAO;
 import app.daos.MovieDAO;
+import app.entities.Movie;
 import app.services.MovieService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+
+import java.util.List;
 
 public class Main {
 
@@ -46,6 +49,13 @@ public class Main {
             System.out.println("------Showing information about movies-----");
             movieService.printMovieById(980026);
             movieService.printMovieById(859585);
+
+            System.out.println();
+            System.out.println();
+
+            // All movies in the "Drama" genre
+            List<Movie> dramaMovies = genreDAO.getMoviesByGenreName("Drama");
+            dramaMovies.forEach(System.out::println);
 
 
         } catch (Exception e) {
