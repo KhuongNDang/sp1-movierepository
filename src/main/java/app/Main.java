@@ -13,6 +13,8 @@ import jakarta.persistence.Persistence;
 
 import java.util.List;
 
+import java.util.List;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -111,6 +113,21 @@ public class Main {
             System.out.println("------Showing information about movies-----");
             movieService.printMovieById(980026);
             movieService.printMovieById(859585);
+
+            System.out.println();
+            System.out.println();
+
+            // All movies in the "Drama" genre
+            List<Movie> dramaMovies = genreDAO.getMoviesByGenreName("Drama");
+            dramaMovies.forEach(System.out::println);
+
+            System.out.println();
+            System.out.println();
+
+            // search for "king" → matches "The Lion King", "King Kong", etc.
+            List<Movie> results = movieDAO.searchByTitle("king");
+            results.forEach(System.out::println);
+
 
 
         } catch (Exception e) {

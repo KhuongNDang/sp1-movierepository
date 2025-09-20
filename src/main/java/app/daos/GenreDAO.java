@@ -1,6 +1,7 @@
 package app.daos;
 
 import app.entities.Genre;
+import app.entities.Movie;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 
@@ -42,4 +43,15 @@ public class GenreDAO implements IDAO<Genre, Integer> {
         }
         return false;
     }
+
+    // Get all movies in a genre by name
+    public List<Movie> getMoviesByGenreName(String genreName) {
+        return em.createQuery(
+                        "SELECT m FROM Movie m JOIN m.genres g WHERE g.name = :genreName",
+                        Movie.class
+                )
+                .setParameter("genreName", genreName)
+                .getResultList();
+    }
+
 }

@@ -44,6 +44,7 @@ public class MovieDAO implements IDAO<Movie, Integer> {
         return false;
     }
 
+
     // Top 10 highest rated
     public List<Movie> getTop10HighestRated() {
         return em.createQuery(
@@ -75,6 +76,16 @@ public class MovieDAO implements IDAO<Movie, Integer> {
                 .getSingleResult();
     }
 
+
+
+    public List<Movie> searchByTitle(String searchTerm) {
+        return em.createQuery(
+                        "SELECT m FROM Movie m WHERE LOWER(m.title) LIKE LOWER(:searchTerm)",
+                        Movie.class
+                )
+                .setParameter("searchTerm", "%" + searchTerm + "%")  // wrap with % for substring search
+                .getResultList();
+    }
 
 
 }
