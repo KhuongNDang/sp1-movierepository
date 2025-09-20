@@ -1,43 +1,45 @@
 package app.daos;
 
 import app.entities.Actor;
-import app.entities.Movie;
 import jakarta.persistence.EntityManager;
-
 import java.util.List;
 
-public class ActorDAO {
+public class ActorDAO implements IDAO<Actor, Integer> {
 
     private final EntityManager em;
 
-    public ActorDAO(EntityManager em){
+    public ActorDAO(EntityManager em) {
         this.em = em;
     }
 
-    public void save(Actor actor){
-        em.merge(actor);
+    @Override
+    public Actor create(Actor actor) {
+        em.persist(actor);
+        return actor;
     }
 
-
-    public Actor find(int id){
+    @Override
+    public Actor getById(Integer id) {
         return em.find(Actor.class, id);
     }
 
-    public void delete(int id){
-        Actor actor = find(id);
-        if (actor != null){
-            em.remove(actor);
-        }
-    }
-    public Actor update(Actor actor) {
-        em.getTransaction().begin();
-        Actor updated = em.merge(actor);  // merge opdaterer entity
-        em.getTransaction().commit();
-        return updated;
-    }
-
-    public List<Actor> finAll(){
+    @Override
+    public List<Actor> getAll() {
         return em.createQuery("SELECT a FROM Actor a", Actor.class).getResultList();
     }
 
+    @Override
+    public Actor update(Actor actor) {
+        return em.merge(actor);
+    }
+
+    @Override
+    public boolean delete(Integer id) {
+        Actor actor = getById(id);
+        if (actor != null) {
+            em.remove(actor);
+            return true;
+        }
+        return false;
+    }
 }

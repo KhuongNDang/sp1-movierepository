@@ -1,42 +1,45 @@
 package app.daos;
 
 import app.entities.Director;
-import app.entities.Movie;
 import jakarta.persistence.EntityManager;
-
 import java.util.List;
 
-public class DirectorDAO {
+public class DirectorDAO implements IDAO<Director, Integer> {
 
     private final EntityManager em;
 
-    public DirectorDAO(EntityManager em){
+    public DirectorDAO(EntityManager em) {
         this.em = em;
     }
 
-    public void save(Director director){
-        em.merge(director);
+    @Override
+    public Director create(Director director) {
+        em.persist(director);
+        return director;
     }
 
-    public Director find(int id){
+    @Override
+    public Director getById(Integer id) {
         return em.find(Director.class, id);
     }
 
-    public void delete(int id){
-        Director director = find(id);
-        if (director != null){
-            em.remove(director);
-        }
-    }
-    public Director update(Director director) {
-        em.getTransaction().begin();
-        Director updated = em.merge(director);  // merge opdaterer entity
-        em.getTransaction().commit();
-        return updated;
-    }
-
-    public List<Director> findAll(){
+    @Override
+    public List<Director> getAll() {
         return em.createQuery("SELECT d FROM Director d", Director.class).getResultList();
     }
 
+    @Override
+    public Director update(Director director) {
+        return em.merge(director);
+    }
+
+    @Override
+    public boolean delete(Integer id) {
+        Director director = getById(id);
+        if (director != null) {
+            em.remove(director);
+            return true;
+        }
+        return false;
+    }
 }
