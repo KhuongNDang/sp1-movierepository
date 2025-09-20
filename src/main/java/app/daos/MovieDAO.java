@@ -1,50 +1,45 @@
 package app.daos;
 
-import app.entities.Genre;
 import app.entities.Movie;
 import jakarta.persistence.EntityManager;
-
 import java.util.List;
 
+public class MovieDAO implements IDAO<Movie, Integer> {
 
-
-public class MovieDAO {
     private final EntityManager em;
 
     public MovieDAO(EntityManager em) {
         this.em = em;
     }
 
-    public void save(Movie movie) {
-        em.merge(movie);
+    @Override
+    public Movie create(Movie movie) {
+        em.persist(movie);
+        return movie;
     }
 
-    public Movie find(int id) {
+    @Override
+    public Movie getById(Integer id) {
         return em.find(Movie.class, id);
     }
 
-    public void delete(int id) {
-        Movie movie = find(id);
+    @Override
+    public List<Movie> getAll() {
+        return em.createQuery("SELECT m FROM Movie m", Movie.class).getResultList();
+    }
+
+    @Override
+    public Movie update(Movie movie) {
+        return em.merge(movie);
+    }
+
+    @Override
+    public boolean delete(Integer id) {
+        Movie movie = getById(id);
         if (movie != null) {
             em.remove(movie);
+            return true;
         }
-    }
-    public void updateTitle(int movieId, String newTitle) {
-        Movie movie = em.find(Movie.class, movieId);
-        if (movie != null) {
-            movie.setTitle(newTitle);
-        }
-    }
-
-    public List<Genre> findAll() {
-        return em.createQuery("SELECT m FROM Movie m", Genre.class).getResultList();
-    }
-
-    public Movie findByTitle(String title) {
-        return em.createQuery("SELECT m FROM Movie m WHERE m.title = :title", Movie.class)
-                .setParameter("title", title)
-                .getResultStream()
-                .findFirst()
-                .orElse(null);
+        return false;
     }
 }

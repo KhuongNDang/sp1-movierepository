@@ -1,5 +1,9 @@
 package app.tests;
 
+import app.daos.ActorDAO;
+import app.daos.DirectorDAO;
+import app.daos.GenreDAO;
+import app.daos.MovieDAO;
 import app.dtos.MovieDTO;
 import app.entities.Actor;
 import app.entities.Movie;
@@ -20,7 +24,11 @@ class MovieServiceTest extends BaseTest {
     @Override
     void setUp() {
         super.setUp();             // Initializes emf and em
-        movieService = new MovieService(em);
+        MovieDAO movieDAO = new MovieDAO(em);
+        GenreDAO genreDAO = new GenreDAO(em);
+        ActorDAO actorDAO = new ActorDAO(em);
+        DirectorDAO directorDAO = new DirectorDAO(em);
+        movieService = new MovieService(movieDAO, genreDAO, actorDAO, directorDAO);
     }
 
     @Test
@@ -29,12 +37,12 @@ class MovieServiceTest extends BaseTest {
 
         // Fetch first movie DTO from API (or mock)
         MovieDTO dto1 = movieService.fetchMovie(550); // Example ID: Fight Club
-        Movie movie1 = movieService.convertToEntity(dto1, em);
+        Movie movie1 = movieService.convertToEntity(dto1);
         em.persist(movie1);
 
         // Fetch second movie DTO that likely shares some actors
         MovieDTO dto2 = movieService.fetchMovie(278); // Example ID: Shawshank Redemption
-        Movie movie2 = movieService.convertToEntity(dto2, em);
+        Movie movie2 = movieService.convertToEntity(dto2);
         em.persist(movie2);
 
         em.getTransaction().commit();

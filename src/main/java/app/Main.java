@@ -1,63 +1,61 @@
 package app;
 
 import app.config.HibernateConfig;
+import app.daos.ActorDAO;
+import app.daos.DirectorDAO;
+import app.daos.GenreDAO;
 import app.daos.MovieDAO;
-import app.entities.Actor;
-import app.entities.Movie;
 import app.services.MovieService;
-import app.dtos.MovieDTO;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 
 public class Main {
 
     public static void main(String[] args) {
-        EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
-        EntityManager em = emf.createEntityManager();
+        EntityManagerFactory emf = null;
+        EntityManager em = null;
 
         try {
-            MovieService movieService = new MovieService(em);
+            // Initialize Hibernate
+            emf = HibernateConfig.getEntityManagerFactory();
+            em = emf.createEntityManager();
+
+            // Create DAOs
             MovieDAO movieDAO = new MovieDAO(em);
+            GenreDAO genreDAO = new GenreDAO(em);
+            ActorDAO actorDAO = new ActorDAO(em);
+            DirectorDAO directorDAO = new DirectorDAO(em);
 
-            int[] movieIds = {550, 718930}; // TMDb IDs
+            // Create service with DAOs
+            MovieService movieService = new MovieService(movieDAO, genreDAO, actorDAO, directorDAO);
 
+            // Start transaction
             em.getTransaction().begin();
 
-            // Save movies
-            for (int tmdbId : movieIds) {
-                MovieDTO dto = movieService.fetchMovie(tmdbId);
-                Movie movie = movieService.convertToEntity(dto, em);
+            // Fetch Danish movies from the last 5 years
+            movieService.fetchRecentDanishMovies(5);
 
-                if (em.find(Movie.class, movie.getId()) == null) {
-                    em.persist(movie);
-                    System.out.println("Saved movie: " + movie.getTitle());
-                }
-            }
-
-            // Update title
-            movieDAO.updateTitle(550, "KING KHUONG");
-
-            // Delete movie
-            movieService.deleteMovie(718930);
-            System.out.println("Deleted movie 718930.");
-
+            // Commit changes to DB
             em.getTransaction().commit();
 
-            // Verify actor
-            em.clear();
-            Actor brad = em.find(Actor.class, 287);
-            if (brad != null) {
-                System.out.println("Brad Pitt is still in movies:");
-                brad.getMovies().forEach(m -> System.out.println("- " + m.getTitle()));
-            }
+            System.out.println("-----Finished saving recent Danish movies-----");
+
+            System.out.println();
+            System.out.println();
+
+            System.out.println("------Showing information about movies-----");
+            movieService.printMovieById(980026);
+            movieService.printMovieById(859585);
+
 
         } catch (Exception e) {
+            if (em != null && em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
             e.printStackTrace();
-            if (em.getTransaction().isActive()) em.getTransaction().rollback();
         } finally {
-            em.close();
-            emf.close();
+            if (em != null) em.close();
+            if (emf != null) emf.close();
         }
     }
 }
