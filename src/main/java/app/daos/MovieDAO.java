@@ -88,4 +88,16 @@ public class MovieDAO implements IDAO<Movie, Integer> {
     }
 
 
+    public Movie updateMovieInDatabase(Movie movie) {
+        return em.merge(movie);
+    }
+
+    public boolean deleteMovieFromDatabase(Integer id) {
+        Movie movie = em.find(Movie.class, id);
+        if (movie != null) {
+            em.remove(movie);
+            return true;
+        }
+        return false;
+    }
 }
