@@ -33,6 +33,7 @@ public class Main {
 
             em.getTransaction().begin();
 
+
             // Fetch Danish movies from the last 5 years
             movieService.fetchRecentDanishMovies(5);
 
@@ -78,6 +79,17 @@ public class Main {
             // 4️⃣ Top 10 most popular
             System.out.println("\nTop 10 most popular movies:");
             printMovies(movieDAO.getTop10MostPopular());
+
+            // Update movie
+            Movie m = movieDAO.getById(676685);
+            m.setTitle("Updated Title");
+            movieDAO.updateMovieInDatabase(m);
+
+            // Delete movie
+            boolean deleted = movieDAO.deleteMovieFromDatabase(1232827);
+            System.out.println("Deleted from DB? " + deleted);
+
+            em.getTransaction().commit();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
