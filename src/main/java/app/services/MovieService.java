@@ -73,7 +73,7 @@ public class MovieService {
             totalPages = root.get("total_pages").asInt();
             JsonNode results = root.get("results");
 
-            if (results != null && results.isArray()) {
+            if (results != null) {
                 for (JsonNode node : results) {
                     int movieId = node.get("id").asInt();
 

@@ -37,9 +37,6 @@ public class Main {
             // Fetch Danish movies from the last 5 years
             movieService.fetchRecentDanishMovies(5);
 
-            // Commit changes to DB
-            em.getTransaction().commit();
-
             System.out.println("-----Finished saving recent Danish movies-----");
 
             System.out.println();
@@ -98,7 +95,6 @@ public class Main {
             HibernateConfig.getEntityManagerFactory().close();
         }
     }
-
 
 
     /** Helper method to print a list of movies neatly */
