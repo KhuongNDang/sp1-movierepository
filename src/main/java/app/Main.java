@@ -64,19 +64,19 @@ public class Main {
             results.forEach(System.out::println);
 
 
-            // 1️⃣ Average rating
+            // Average rating
             Double avgRating = movieDAO.getAverageRating();
             System.out.printf("Average rating of all movies: %.2f%n%n", avgRating);
 
-            // 2️⃣ Top 10 highest rated
+            // Top 10 highest rated
             System.out.println("Top 10 highest rated movies:");
             printMovies(movieDAO.getTop10HighestRated());
 
-            // 3️⃣ Top 10 lowest rated
+            // Top 10 lowest rated
             System.out.println("\nTop 10 lowest rated movies:");
             printMovies(movieDAO.getTop10LowestRated());
 
-            // 4️⃣ Top 10 most popular
+            // Top 10 most popular
             System.out.println("\nTop 10 most popular movies:");
             printMovies(movieDAO.getTop10MostPopular());
 
