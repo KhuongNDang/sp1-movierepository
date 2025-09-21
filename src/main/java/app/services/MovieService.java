@@ -117,7 +117,6 @@ public class MovieService {
         movie.setOverview(dto.getOverview());
         movie.setReleaseDate(dto.getRelease_date());
         movie.setRuntime(dto.getRuntime() != null ? dto.getRuntime() : 0);
-
         movie.setVoteAverage(dto.getVote_average());
         movie.setPopularity(dto.getPopularity());
 

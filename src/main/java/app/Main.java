@@ -39,6 +39,43 @@ public class Main {
 
         try {
             MovieDAO movieDAO = new MovieDAO(em);
+            GenreDAO genreDAO = new GenreDAO(em);
+            ActorDAO actorDAO = new ActorDAO(em);
+            DirectorDAO directorDAO = new DirectorDAO(em);
+
+            MovieService movieService = new MovieService(movieDAO, genreDAO, actorDAO, directorDAO);
+
+            em.getTransaction().begin();
+
+            // Fetch Danish movies from the last 5 years
+            movieService.fetchRecentDanishMovies(5);
+
+            // Commit changes to DB
+            em.getTransaction().commit();
+
+            System.out.println("-----Finished saving recent Danish movies-----");
+
+            System.out.println();
+            System.out.println();
+
+            System.out.println("------Showing information about movies-----");
+            movieService.printMovieById(980026);
+            movieService.printMovieById(859585);
+
+            System.out.println();
+            System.out.println();
+
+            // All movies in the "Drama" genre
+            List<Movie> dramaMovies = genreDAO.getMoviesByGenreName("Drama");
+            dramaMovies.forEach(System.out::println);
+
+            System.out.println();
+            System.out.println();
+
+            // search for "king" → matches "The Lion King", "King Kong", etc.
+            List<Movie> results = movieDAO.searchByTitle("king");
+            results.forEach(System.out::println);
+
 
             // 1️⃣ Average rating
             Double avgRating = movieDAO.getAverageRating();
@@ -56,6 +93,8 @@ public class Main {
             System.out.println("\nTop 10 most popular movies:");
             printMovies(movieDAO.getTop10MostPopular());
 
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             em.close();
             HibernateConfig.getEntityManagerFactory().close();
@@ -77,8 +116,7 @@ public class Main {
 
 
 
-//INITIATING THE DB WITH DATA FROM THE API
-/*
+/*//INITIATING THE DB WITH DATA FROM THE API
         EntityManagerFactory emf = null;
         EntityManager em = null;
 
@@ -140,11 +178,4 @@ public class Main {
             if (emf != null) emf.close();
         }
     }
-}
-*/
-
-
-
-
-
-
+}*/

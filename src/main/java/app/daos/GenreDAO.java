@@ -54,4 +54,12 @@ public class GenreDAO implements IDAO<Genre, Integer> {
                 .getResultList();
     }
 
+    public Genre findByName(String name) {
+        List<Genre> genres = em.createQuery(
+                        "SELECT g FROM Genre g WHERE g.name = :name", Genre.class)
+                .setParameter("name", name)
+                .getResultList();
+        return genres.isEmpty() ? null : genres.get(0);
+    }
+
 }
