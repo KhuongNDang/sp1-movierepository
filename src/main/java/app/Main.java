@@ -21,20 +21,6 @@ public class Main {
 
 
         EntityManager em = HibernateConfig.getEntityManagerFactory().createEntityManager();
-/*
-        try {
-            MovieDAO movieDAO = new MovieDAO(em);
-
-            // Fetch all movies
-            List<Movie> movies = movieDAO.getAll();
-
-            // Print them
-            movies.forEach(System.out::println);
-        } finally {
-            em.close();
-            HibernateConfig.getEntityManagerFactory().close();
-        }
-*/
 
 
         try {
@@ -113,69 +99,3 @@ public class Main {
         }
     }
 }
-
-
-
-/*//INITIATING THE DB WITH DATA FROM THE API
-        EntityManagerFactory emf = null;
-        EntityManager em = null;
-
-        try {
-            // Initialize Hibernate
-            emf = HibernateConfig.getEntityManagerFactory();
-            em = emf.createEntityManager();
-
-            // Create DAOs
-            MovieDAO movieDAO = new MovieDAO(em);
-            GenreDAO genreDAO = new GenreDAO(em);
-            ActorDAO actorDAO = new ActorDAO(em);
-            DirectorDAO directorDAO = new DirectorDAO(em);
-
-            // Create service with DAOs
-            MovieService movieService = new MovieService(movieDAO, genreDAO, actorDAO, directorDAO);
-
-            // Start transaction
-            em.getTransaction().begin();
-
-            // Fetch Danish movies from the last 5 years
-            movieService.fetchRecentDanishMovies(5);
-
-            // Commit changes to DB
-            em.getTransaction().commit();
-
-            System.out.println("-----Finished saving recent Danish movies-----");
-
-            System.out.println();
-            System.out.println();
-
-            System.out.println("------Showing information about movies-----");
-            movieService.printMovieById(980026);
-            movieService.printMovieById(859585);
-
-            System.out.println();
-            System.out.println();
-
-            // All movies in the "Drama" genre
-            List<Movie> dramaMovies = genreDAO.getMoviesByGenreName("Drama");
-            dramaMovies.forEach(System.out::println);
-
-            System.out.println();
-            System.out.println();
-
-            // search for "king" → matches "The Lion King", "King Kong", etc.
-            List<Movie> results = movieDAO.searchByTitle("king");
-            results.forEach(System.out::println);
-
-
-
-        } catch (Exception e) {
-            if (em != null && em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            if (em != null) em.close();
-            if (emf != null) emf.close();
-        }
-    }
-}*/
